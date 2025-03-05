@@ -144,10 +144,10 @@ class TestEnvironmentProvider(unittest.TestCase):
         database = FakeDatabase()
         Config().set("database", database)
         database.put(f"/testrun/{suite_id}/tercc", json.dumps(tercc))
-        database.put(f"/testrun/{suite_id}/provider/iut", json.dumps(IUT_PROVIDER))
-        database.put(f"/testrun/{suite_id}/provider/log-area", json.dumps(LOG_AREA_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/iut", json.dumps(IUT_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/log-area", json.dumps(LOG_AREA_PROVIDER))
         database.put(
-            f"/testrun/{suite_id}/provider/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
+            f"/testrun_providers/{suite_id}/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
         )
 
         handler = functools.partial(GraphQLHandler, tercc)
@@ -155,7 +155,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         self.logger.info("STEP: Start up a fake server.")
         with FakeServer(None, None, handler) as server:
             database.put(
-                f"/testrun/{suite_id}/provider/dataset",
+                f"/testrun_providers/{suite_id}/dataset",
                 json.dumps({"host": server.host}),
             )
             os.environ["ETOS_GRAPHQL_SERVER"] = server.host
@@ -195,10 +195,10 @@ class TestEnvironmentProvider(unittest.TestCase):
         database = FakeDatabase()
         Config().set("database", database)
         database.put(f"/testrun/{suite_id}/tercc", json.dumps(tercc))
-        database.put(f"/testrun/{suite_id}/provider/iut", json.dumps(IUT_PROVIDER))
-        database.put(f"/testrun/{suite_id}/provider/log-area", json.dumps(LOG_AREA_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/iut", json.dumps(IUT_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/log-area", json.dumps(LOG_AREA_PROVIDER))
         database.put(
-            f"/testrun/{suite_id}/provider/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
+            f"/testrun_providers/{suite_id}/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
         )
 
         handler = functools.partial(GraphQLHandler, tercc)
@@ -206,7 +206,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         self.logger.info("STEP: Start up a fake server.")
         with FakeServer(None, None, handler) as server:
             database.put(
-                f"/testrun/{suite_id}/provider/dataset",
+                f"/testrun_providers/{suite_id}/dataset",
                 json.dumps({"host": server.host}),
             )
             os.environ["ETOS_GRAPHQL_SERVER"] = server.host
@@ -249,10 +249,10 @@ class TestEnvironmentProvider(unittest.TestCase):
         database = FakeDatabase()
         Config().set("database", database)
         database.put(f"/testrun/{suite_id}/tercc", json.dumps(tercc))
-        database.put(f"/testrun/{suite_id}/provider/iut", json.dumps(IUT_PROVIDER))
-        database.put(f"/testrun/{suite_id}/provider/log-area", json.dumps(LOG_AREA_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/iut", json.dumps(IUT_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/log-area", json.dumps(LOG_AREA_PROVIDER))
         database.put(
-            f"/testrun/{suite_id}/provider/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
+            f"/testrun_providers/{suite_id}/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
         )
 
         handler = functools.partial(GraphQLHandler, tercc)
@@ -260,7 +260,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         self.logger.info("STEP: Start up a fake server.")
         with FakeServer(None, None, handler) as server:
             database.put(
-                f"/testrun/{suite_id}/provider/dataset",
+                f"/testrun_providers/{suite_id}/dataset",
                 json.dumps({"host": server.host}),
             )
             os.environ["ETOS_GRAPHQL_SERVER"] = server.host
@@ -301,10 +301,10 @@ class TestEnvironmentProvider(unittest.TestCase):
         Config().set("database", database)
         database.put(f"/testrun/{suite_id}/tercc", json.dumps(tercc))
         self.logger.info("STEP: Register an IUT provider providing only 1 IUT.")
-        database.put(f"/testrun/{suite_id}/provider/iut", json.dumps(IUT_PROVIDER_SINGLE))
-        database.put(f"/testrun/{suite_id}/provider/log-area", json.dumps(LOG_AREA_PROVIDER))
+        database.put(f"/testrun_providers/{suite_id}/iut", json.dumps(IUT_PROVIDER_SINGLE))
+        database.put(f"/testrun_providers/{suite_id}/log-area", json.dumps(LOG_AREA_PROVIDER))
         database.put(
-            f"/testrun/{suite_id}/provider/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
+            f"/testrun_providers/{suite_id}/execution-space", json.dumps(EXECUTION_SPACE_PROVIDER)
         )
 
         handler = functools.partial(GraphQLHandler, tercc)
@@ -312,7 +312,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         self.logger.info("STEP: Start up a fake server.")
         with FakeServer(None, None, handler) as server:
             database.put(
-                f"/testrun/{suite_id}/provider/dataset",
+                f"/testrun_providers/{suite_id}/dataset",
                 json.dumps({"host": server.host}),
             )
             os.environ["ETOS_GRAPHQL_SERVER"] = server.host

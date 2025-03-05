@@ -46,6 +46,8 @@ class ProviderRegistry:
         self.etos = etos
         self.jsontas = jsontas
         self.testrun = ETCDPath(f"/testrun/{suite_id}")
+        # separate subtree for providers for performance reasons: fetching the entire testrun can be expensive
+        self.testrun_providers = ETCDPath(f"/testrun_providers/{suite_id}")
         if suite_id is None:
             # Results in exceptions if trying to use testrun without suite ID set. Otherwise
             # there's a big risk of writing data on bogus keys in the database.
@@ -58,8 +60,11 @@ class ProviderRegistry:
 
         :return: Whether or not a configuration exists for the suite ID.
         """
-        configuration = self.testrun.join("provider").read_all()
-        return bool(configuration)
+        for provider in (self.iut_provider, self.log_area_provider, self.execution_space_provider):
+            self.logger.info(f"Checking provider: {provider}")
+            if provider() is None:
+                return False
+        return True
 
     def wait_for_configuration(self) -> bool:
         """Wait for ProviderRegistry to become configured.
@@ -91,12 +96,12 @@ class ProviderRegistry:
 
         :return: Provider JSON or None.
         """
-        if self.testrun is None:
+        if self.testrun_providers is None:
             self.logger.error(
-                "Could not retrieve log area provider from database, testrun is not set."
+                "Could not retrieve log area provider from database, testrun providers path not set."
             )
             return None
-        provider = self.testrun.join("provider/log-area").read()
+        provider = self.testrun_providers.join("log-area").read()
         if provider:
             return json.loads(provider, object_pairs_hook=OrderedDict)
         return None
@@ -106,10 +111,10 @@ class ProviderRegistry:
 
         :return: Provider JSON or None.
         """
-        if self.testrun is None:
-            self.logger.error("Could not retrieve IUT provider from database, testrun is not set.")
+        if self.testrun_providers is None:
+            self.logger.error("Could not retrieve IUT provider from database, testrun providers path not set.")
             return None
-        provider = self.testrun.join("provider/iut").read()
+        provider = self.testrun_providers.join("iut").read()
         if provider:
             return json.loads(provider, object_pairs_hook=OrderedDict)
         return None
@@ -119,12 +124,12 @@ class ProviderRegistry:
 
         :return: Provider JSON or None.
         """
-        if self.testrun is None:
+        if self.testrun_providers is None:
             self.logger.error(
-                "Could not retrieve execution space provider from database, testrun is not set."
+                "Could not retrieve execution space provider from database, testrun providers path not set."
             )
             return None
-        provider = self.testrun.join("provider/execution-space").read()
+        provider = self.testrun_providers.join("execution-space").read()
         if provider:
             return json.loads(provider, object_pairs_hook=OrderedDict)
         return None
@@ -134,7 +139,7 @@ class ProviderRegistry:
 
         :return: Execution space provider object.
         """
-        provider_json = self.testrun.join("provider/execution-space").read()
+        provider_json = self.testrun_providers.join("execution-space").read()
         if provider_json:
             provider = ExecutionSpaceProvider(
                 self.etos,
@@ -150,7 +155,7 @@ class ProviderRegistry:
 
         :return: IUT provider object.
         """
-        provider_json = self.testrun.join("provider/iut").read()
+        provider_json = self.testrun_providers.join("iut").read()
         if provider_json:
             provider = IutProvider(
                 self.etos,
@@ -166,7 +171,7 @@ class ProviderRegistry:
 
         :return: Log area provider object.
         """
-        provider_json = self.testrun.join("provider/log-area").read()
+        provider_json = self.testrun_providers.join("log-area").read()
         if provider_json:
             provider = LogAreaProvider(
                 self.etos,
@@ -182,7 +187,7 @@ class ProviderRegistry:
 
         :return: Dataset JSON data.
         """
-        dataset = self.testrun.join("provider/dataset").read()
+        dataset = self.testrun_providers.join("dataset").read()
         if dataset:
             return json.loads(dataset)
         return None

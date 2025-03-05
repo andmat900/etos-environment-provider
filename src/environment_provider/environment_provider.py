@@ -132,6 +132,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
     def configure(self, request: EnvironmentRequestSchema) -> None:
         """Configure environment provider."""
         self.logger.info("Configure environment provider.")
+        self.logger.info(f"Environment request: {request}")
         if not self.registry.wait_for_configuration():
             # TODO: Add link ref to docs that describe how the config is done.
             raise EnvironmentProviderNotConfigured(
@@ -214,6 +215,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
 
         suite = self.registry.testrun.join(f"suite/{sub_suite['test_suite_started_id']}")
         suite.join(f"/subsuite/{event_id}/suite").write(json.dumps(sub_suite))
+
 
     def upload_sub_suite(self, sub_suite: dict) -> tuple[str, dict]:
         """Upload sub suite to log area.
@@ -572,22 +574,22 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
 
     def _configure_iut(self, provider_spec: dict):
         """Configure iut provider for a testrun."""
-        db = self.registry.testrun.join("provider/iut")  # type: ignore
+        db = self.registry.testrun_providers.join("iut")  # type: ignore
         self._configure_provider(db, provider_spec, "iut")
 
     def _configure_log_area(self, provider_spec: dict):
         """Configure log area provider for a testrun."""
-        db = self.registry.testrun.join("provider/log-area")  # type: ignore
+        db = self.registry.testrun_providers.join("log-area")  # type: ignore
         self._configure_provider(db, provider_spec, "log")
 
     def _configure_execution_space(self, provider_spec: dict):
         """Configure execution space provider for a testrun."""
-        db = self.registry.testrun.join("provider/execution-space")  # type: ignore
+        db = self.registry.testrun_providers.join("execution-space")  # type: ignore
         self._configure_provider(db, provider_spec, "execution_space")
 
     def _configure_dataset(self, datasets: list[dict]):
         """Configure dataset for a testrun."""
-        db = self.registry.testrun.join("provider/dataset")  # type: ignore
+        db = self.registry.testrun_providers.join("dataset")  # type: ignore
         db.write(json.dumps(datasets))
 
     def configure_environment_provider(self, request: EnvironmentRequestSchema):
@@ -603,6 +605,23 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         execution_space = provider_client.get(provider_id).to_dict()  # type: ignore
         self._configure_execution_space(execution_space)  # type: ignore
 
+    def configure_environment_provider_v0(self):
+        """Configure the environment provider when running v0 ETOS"""
+        provider_entries = self.registry.testrun.join("provider").read_all()
+        self.logger.info(f"Testrun providers: {provider_entries}")
+        for entry in provider_entries:
+            provider = json.loads(entry[0])
+            provider_type = list(provider.keys())[0]
+            provider_str = json.dumps(provider)
+            if provider_type == "iut":
+                self.registry.testrun_providers.join('iut').write(provider_str)
+            elif provider_type == "execution_space":
+                self.registry.testrun_providers.join('execution-space').write(provider_str)
+            elif provider_type == "log":
+                self.registry.testrun_providers.join('log-area').write(provider_str)
+            else:
+                self.registry.testrun_providers.join('dataset').write(provider_str)
+
     def run(self) -> dict:
         """Run the environment provider task.
 
@@ -615,6 +634,8 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             for request in self.environment_provider_config.requests:
                 if self.environment_provider_config.etos_controller:
                     self.configure_environment_provider(request)
+                else:
+                    self.configure_environment_provider_v0()
                 self.configure(request)
                 self._run(request)
             return {"error": None}
